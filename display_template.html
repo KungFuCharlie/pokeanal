@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pokemon Historical Display</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 10px 20px 20px;
+            font-family: Arial;
+            font-size: 16px;
+        }
+
+        #map-container {
+            padding: 6px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ccc #ccc #999 #ccc;
+            -webkit-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+            -moz-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+            box-shadow: rgba(64, 64, 64, 0.1) 0 2px 5px;
+            width: 1280px;
+        }
+
+        #map {
+            width: 1280px;
+            height: 720px;
+        }
+
+        #actions {
+            list-style: none;
+            padding: 0;
+        }
+
+        #inline-actions {
+            padding-top: 10px;
+        }
+
+        .item {
+            margin-left: 20px;
+        }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js%KEY%"></script>
+    <script src="data.json"></script>
+    <script type="text/javascript" src="markerclusterer.js"></script>
+    <script>
+
+        var markerClusterer = null;
+        var map = null;
+
+        function refreshMap() {
+            if (markerClusterer) {
+                markerClusterer.clearMarkers();
+            }
+
+            var markers = [];
+
+            var pid = parseInt(document.getElementById('pid').value, 10);
+            pid = pid === -1 ? null : pid;
+
+            for (var i = 0; i < %COUNT%; ++i) {
+                if (data.pokemon[i].pokemon_id == pid) {
+
+                    var latLng = new google.maps.LatLng(data.pokemon[i].latitude, data.pokemon[i].longitude);
+                    var marker = new google.maps.Marker({
+                        position: latLng
+                    });
+                    markers.push(marker);
+                }
+            }
+
+            markerClusterer = new MarkerClusterer(map, markers, {
+                imagePath: 'images/m'
+            });
+        }
+
+        function initialize() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 11,
+                center: new google.maps.LatLng(28.0910368257, -80.56480723),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            var refresh = document.getElementById('refresh');
+            google.maps.event.addDomListener(refresh, 'click', refreshMap);
+
+            var clear = document.getElementById('clear');
+            google.maps.event.addDomListener(clear, 'click', clearClusters);
+
+            refreshMap();
+        }
+
+        function clearClusters(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            markerClusterer.clearMarkers();
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+</head>
+<body>
+<h3>Pokemon Historical Display</h3>
+<div id="map-container">
+    <div id="map"></div>
+</div>
+<div id="inline-actions">
+      <span>Pokemon ID:
+        <select id="pid" onchange="refreshMap()">
+%PID_OPTIONS%
+        </select>
+
+      </span>
+
+    <input id="refresh" type="button" value="Refresh Map" class="item"/>
+    <a href="#" id="clear">Clear</a>
+</div>
+</body>
+</html>
